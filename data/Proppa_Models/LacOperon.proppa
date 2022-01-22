@@ -1,0 +1,57 @@
+// Parameters:
+k_tl_beta_Gal__ = Uniform(0,1);
+k_tl_lacP__ = Uniform(0,1);
+BGal_tetramerization__ = Uniform(500,1500);
+BGal_vmax__ = Uniform(0,500);
+Bgal_Kd__ = Uniform(50000,100000);
+GluPermease_vmax__ = Uniform(0,500);
+GluPermease_Kd__ = Uniform(5000,10000);
+LacPermease_reverse_vmax__ = Uniform(0,2);
+LacPermease_Kd__ = Uniform(8000000, 9000000);
+kdeg_mRNA__ = Uniform(0,1);
+kdeg_prot__ = Uniform(0,1);
+r0_Vtx = Uniform(0,1);
+r0_n_L = Uniform(0,5);
+r0_K_L = Uniform(2800000,3000000);
+r0_K_G = Uniform(1000,2000);
+r0_n_G = Uniform(0,3);
+r0_k_leak = Uniform(0,1);
+r6_GluPermease_Kd = Uniform(8000,10000);
+r6_LacPermease_vmax = Uniform(30,40);
+r6_LacPermease_Kd = Uniform(106576,206576);
+r6_phi_G = Uniform(0,1);
+ 
+//Rates:
+kineticLawOf rna_creation: dna_Lac_Operon*r0_Vtx*(r0_k_leak + (Lactose_internal/(r0_K_L + Lactose_internal))*(1/(1 + (Glucose_external/r0_K_G))));
+kineticLawOf monomer_creation: k_tl_beta_Gal__*rna_M;
+kineticLawOf lactose_permease_creation: k_tl_lacP__*rna_M;
+kineticLawOf monomer_to_betagal: BGal_tetramerization__*monomer_betaGal*(monomer_betaGal - 1)*(monomer_betaGal - 2)*(monomer_betaGal - 3);
+kineticLawOf lac_int_to_lac_con: BGal_vmax__*protein_betaGal*Lactose_internal/(Bgal_Kd__ + Lactose_internal);
+kineticLawOf gluc_ext_to_gluc_int: GluPermease_vmax__*Biomass*Glucose_external/(GluPermease_Kd__ + Glucose_external);
+kineticLawOf lac_ext_to_lac_int: (protein_Lactose_Permease*r6_LacPermease_vmax*Lactose_external/(Lactose_external + r6_LacPermease_Kd))*(1 - r6_phi_G*Glucose_external/(r6_GluPermease_Kd + Glucose_external));
+kineticLawOf lac_int_to_lac_ext: LacPermease_reverse_vmax__*protein_Lactose_Permease*Lactose_internal/(LacPermease_Kd__ + Lactose_internal);
+kineticLawOf rna_death: kdeg_mRNA__*rna_M;
+kineticLawOf betagal_death: kdeg_prot__*protein_betaGal;
+kineticLawOf lactose_permease_death: kdeg_prot__*protein_Lactose_Permease;
+kineticLawOf biomass_constant: Biomass;
+kineticLawOf dna_lac_operon_constant: dna_Lac_Operon;
+
+// System (species definitions):
+rna_M = rna_creation >> + rna_death <<;
+monomer_betaGal = monomer_creation >> + monomer_to_betagal << + monomer_to_betagal << + monomer_to_betagal << + monomer_to_betagal <<;
+protein_betaGal = monomer_to_betagal >> + betagal_death <<;
+Lactose_external = lac_ext_to_lac_int << + lac_int_to_lac_ext >>;
+Lactose_internal = lac_int_to_lac_con << + lac_ext_to_lac_int >> + lac_int_to_lac_ext <<;
+Glucose_external = gluc_ext_to_gluc_int <<;
+Glucose_internal = gluc_ext_to_gluc_int >>;
+protein_Lactose_Permease = lactose_permease_creation >> + lactose_permease_death <<;
+Lactose_consumed = lac_int_to_lac_con >>;
+Biomass = biomass_constant (.);
+dna_Lac_Operon = dna_lac_operon_constant (.);
+
+// Initial States:
+Lactose_external[120440000]<*>Glucose_external[60220000]<*>Biomass[1000]<*>dna_Lac_Operon[2]<*>protein_betaGal[0]<*>monomer_betaGal[0]<*>rna_M[0]<*>protein_Lactose_Permease[0]<*>Lactose_consumed[0]<*>Lactose_internal[0]<*>Glucose_internal[0]  
+
+observe(lo_proppa_obs);
+infer(fluid);
+configure(config_lo);
