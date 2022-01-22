@@ -3,6 +3,8 @@ The Gillespie algorithm implemented in different probabilistic programming langu
 
 ## PPLs
 
-1. Pyro
-2. ProPPA
-3. pyprob
+See the PPLs used in this repository and the corresponding implementation, currently formulated in Jupyter Notebooks.
+
+1. Pyro - Pyro_Implementation.ipynb
+2. ProPPA - ProPPA_Implementation.ipynb
+3. pyprob - In progress
