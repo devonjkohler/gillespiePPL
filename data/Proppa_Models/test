@@ -1,2 +1,2 @@
-obs_noise = 100
+obs_noise = 10000000000
 proposal r6_LacPermease_vmax = 35.8

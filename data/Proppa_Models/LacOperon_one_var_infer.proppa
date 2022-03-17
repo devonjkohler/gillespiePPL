@@ -1,0 +1,48 @@
+// Parameters:
+r6_LacPermease_vmax = Normal(34.0,0.5);
+
+//Rates:
+kineticLawOf rna_creation: dna_Lac_Operon*0.003*(0.05 + (Lactose_internal**4/(2900000.0**4 + Lactose_internal**4))*(1.0/(1.0 + (Glucose_external/1506.0)**2)));
+kineticLawOf monomer_creation: 0.156666666666667*rna_M;
+kineticLawOf lactose_permease_creation: 0.313333333333333*rna_M;
+kineticLawOf monomer_to_betagal: 1000.0*monomer_betaGal*(monomer_betaGal - 1.0)*(monomer_betaGal - 2.0)*(monomer_betaGal - 3.0);
+kineticLawOf lac_int_to_lac_con: 300.0*protein_betaGal*Lactose_internal/(84310.0 + Lactose_internal);
+kineticLawOf gluc_ext_to_gluc_int: 301.0*Biomass*Glucose_external/(9033.0 + Glucose_external);
+
+kineticLawOf lac_ext_to_lac_int: (protein_Lactose_Permease*r6_LacPermease_vmax*Lactose_external/(Lactose_external + 156576.0))*(1.0 - 0.35*Glucose_external/(9033.0 + Glucose_external));
+kineticLawOf lac_int_to_lac_ext: 1.18966666666667*protein_Lactose_Permease*Lactose_internal/(8800000.0 + Lactose_internal);
+kineticLawOf rna_death: 0.00783333333333333*rna_M;
+kineticLawOf betagal_death: 0.000166666666666667*protein_betaGal;
+kineticLawOf lactose_permease_death: 0.000166666666666667*protein_Lactose_Permease;
+kineticLawOf biomass_constant: Biomass;
+kineticLawOf dna_lac_operon_constant: dna_Lac_Operon;
+
+// System (species definitions):
+rna_M = rna_creation >> + rna_death <<;
+monomer_betaGal = monomer_creation >> + monomer_to_betagal << + monomer_to_betagal << + monomer_to_betagal << + monomer_to_betagal <<;
+protein_betaGal = monomer_to_betagal >> + betagal_death <<;
+Lactose_external = lac_ext_to_lac_int << + lac_int_to_lac_ext >>;
+Lactose_internal = lac_int_to_lac_con << + lac_ext_to_lac_int >> + lac_int_to_lac_ext <<;
+Glucose_external = gluc_ext_to_gluc_int <<;
+Glucose_internal = gluc_ext_to_gluc_int >>;
+protein_Lactose_Permease = lactose_permease_creation >> + lactose_permease_death <<;
+Lactose_consumed = lac_int_to_lac_con >>;
+Biomass = biomass_constant (.);
+dna_Lac_Operon = dna_lac_operon_constant (.);
+
+// Initial States:
+Lactose_external[120440000]<*>Glucose_external[60220000]<*>Biomass[1000]<*>dna_Lac_Operon[2]<*>protein_betaGal[0]<*>monomer_betaGal[0]<*>rna_M[0]<*>protein_Lactose_Permease[0]<*>Lactose_consumed[0]<*>Lactose_internal[0]<*>Glucose_internal[0]
+
+observe(trace_1);
+observe(trace_2);
+observe(trace_3);
+observe(trace_4);
+observe(trace_5);
+observe(trace_6);
+observe(trace_7);
+observe(trace_8);
+observe(trace_9);
+observe(trace_10);
+
+infer(fluid);
+configure(test);
