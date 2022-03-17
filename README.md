@@ -7,4 +7,5 @@ See the PPLs used in this repository and the corresponding implementation, curre
 
 1. Pyro - Pyro_Implementation.ipynb
 2. ProPPA - ProPPA_Implementation.ipynb
-3. pyprob - In progress
+3. SBI - SBI_Implementation.ipynb
+4. pyprob - In progress
